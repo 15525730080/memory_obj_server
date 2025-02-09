@@ -4,6 +4,7 @@ import platform
 import rpyc
 import dill
 import logging
+import time
 from rpyc.utils.server import ThreadedServer
 from filelock import FileLock
 
@@ -26,6 +27,7 @@ class PortManager:
                 for pid in pids:
                     kill_result = subprocess.run(f'taskkill /F /PID {pid}', shell=True, capture_output=True, text=True)
                     kill_result.check_returncode()  # 检查杀死进程命令是否成功执行
+                    time.sleep(0.5)
                     logger.info(f'Port {port} successfully released (PID {pid})')
             elif sys_type in ['Linux', 'Darwin']:
                 find_cmd = f'lsof -t -i:{port}'
@@ -34,6 +36,7 @@ class PortManager:
                 for pid in pids:
                     kill_result = subprocess.run(f'kill -9 {pid}', shell=True, capture_output=True, text=True)
                     kill_result.check_returncode()  # 检查杀死进程命令是否成功执行
+                    time.sleep(0.5)
                     logger.info(f'Port {port} successfully released (PID {pid})')
             else:
                 logger.warning(f'Unsupported operating system: {sys_type}')
