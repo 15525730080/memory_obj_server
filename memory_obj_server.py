@@ -77,7 +77,7 @@ class ObjectStoreService(rpyc.Service):
             return cls.storage.pop(key, f"Key '{key}' not found.")
 
     @classmethod
-    def start_server(cls, port=6000):
+    def start_server(cls, port=30731):
         """
         启动 RPyC 服务。若服务已启动则直接返回。
         """
@@ -125,7 +125,7 @@ class ObjectStoreClient:
     客户端类，用于操作 ObjectStoreService 服务。
     支持上下文管理器，以便自动关闭连接。
     """
-    def __init__(self, host='localhost', port=6000):
+    def __init__(self, host='localhost', port=30731):
         self.conn = rpyc.connect(host, port)
         logger.info(f"Connected to server at {host}:{port}")
 
@@ -166,45 +166,3 @@ class ObjectStoreClient:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
-
-if __name__ == "__main__":
-    # 启动服务
-    ObjectStoreService.start_server()
-
-    # 示例：直接使用客户端
-    client = ObjectStoreClient()
-    client.put('foo', {'bar': 123})
-    print("client get foo:", client.get('foo'))
-    client.close()
-
-    # 示例：使用上下文管理器
-    with ObjectStoreClient() as client_ctx:
-        client_ctx.put('hello', 'world')
-        print("client get hello:", client_ctx.get('hello'))
-
-    # 停止服务
-    ObjectStoreService.stop_server()
-    ObjectStoreService.start_server()
-    ObjectStoreService.start_server()
-    
-    client = ObjectStoreClient()
-    client1 = ObjectStoreClient()
-    client2 = ObjectStoreClient()
-    client3 = ObjectStoreClient()
-
-    client.put('foo', {'bar': 123})
-    client1.put('foo1', {'bar': 1234})
-    client2.put('foo2', {'bar': 1235})
-    client3.put('foo3', {'bar': 1236})
-
-    print("client3", client3.get('foo'))
-    print("client", client.get('foo1'))
-    print("client2", client2.get('foo2'))
-    print("client1", client1.get('foo3'))
-
-    client1.delete("foo3")
-    print("client3", client3.get('foo3'))
-
-    # 停止服务
-    ObjectStoreService.stop_server()
-    client1.delete("foo3")
