@@ -24,14 +24,16 @@ class PortManager:
                 # 获取所有可能的 PID
                 pids = [line.split()[-1] for line in output.splitlines() if line]
                 for pid in pids:
-                    subprocess.run(f'taskkill /F /PID {pid}', shell=True, check=True)
+                    kill_result = subprocess.run(f'taskkill /F /PID {pid}', shell=True, capture_output=True, text=True)
+                    kill_result.check_returncode()  # 检查杀死进程命令是否成功执行
                     logger.info(f'Port {port} successfully released (PID {pid})')
             elif sys_type in ['Linux', 'Darwin']:
                 find_cmd = f'lsof -t -i:{port}'
                 output = subprocess.run(find_cmd, shell=True, capture_output=True, text=True).stdout.strip()
                 pids = output.split()
                 for pid in pids:
-                    subprocess.run(f'kill -9 {pid}', shell=True, check=True)
+                    kill_result = subprocess.run(f'kill -9 {pid}', shell=True, capture_output=True, text=True)
+                    kill_result.check_returncode()  # 检查杀死进程命令是否成功执行
                     logger.info(f'Port {port} successfully released (PID {pid})')
             else:
                 logger.warning(f'Unsupported operating system: {sys_type}')
